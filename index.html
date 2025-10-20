@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipify v1.4 | Video Sharing Platform</title>
+
+<style>
+  * { box-sizing: border-box; transition: all 0.3s ease; }
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: linear-gradient(90deg, #007bff, #6610f2);
+    text-align: center;
+    padding: 18px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  nav {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav button {
+    border: none;
+    background: none;
+    color: #ccc;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  nav button.active {
+    color: #fff;
+    border-bottom: 2px solid #00bfff;
+  }
+  .container {
+    padding: 20px;
+    max-width: 800px;
+    margin: auto;
+  }
+  .hidden { display: none; }
+  .video-card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  video, iframe {
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+  }
+  .video-meta {
+    padding: 12px 16px;
+  }
+  .video-meta strong { font-size: 17px; color: #fff; }
+  .video-meta .small-text { font-size: 13px; color: #bbb; }
+
+  /* Buttons */
+  .btn {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(0,114,255,0.4);
+    margin-top: 5px;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,114,255,0.6);
+  }
+
+  /* Input Fields */
+  input, textarea {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    font-size: 15px;
+  }
+  input::placeholder, textarea::placeholder { color: #ccc; }
+  form { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Auth Card */
+  .auth-card {
+    background: rgba(0,0,0,0.4);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-align: left;
+  }
+  .auth-card h3 {
+    color: #3399ff;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+  .center {
+    text-align: center;
+    margin-top: 10px;
+  }
+  .small-text {
+    font-size: 13px;
+    color: #bbb;
+  }
+</style>
+</head>
+
+<body>
+<header>🎬 Clipify v1.4</header>
+
+<nav>
+  <button id="homeTab" class="active" onclick="showTab('home')">Home</button>
+  <button id="uploadTab" onclick="showTab('upload')">Upload</button>
+  <button id="profileTab" onclick="showTab('profile')">Profile</button>
+</nav>
+
+<div class="container">
+  <!-- HOME -->
+  <div id="home"></div>
+
+  <!-- UPLOAD -->
+  <div id="upload" class="hidden">
+    <h3>📤 Upload or Paste Video Link</h3>
+    <form id="uploadForm">
+      <input type="file" id="videoFile" accept="video/*">
+      <input type="text" id="videoLink" placeholder="Paste video link (YouTube, Drive, Vimeo)">
+      <input type="text" id="title" placeholder="Enter video title" required>
+      <textarea id="description" rows="3" placeholder="Write a short description"></textarea>
+      <button type="submit" class="btn">Upload</button>
+    </form>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profile" class="hidden">
+    <!-- LOGIN -->
+    <div id="loginCard" class="auth-card">
+      <h3>Login</h3>
+      <form id="loginForm">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password" required>
+        <button type="submit" class="btn">Login</button>
+        <button type="button" class="btn" onclick="toggleAuth('signup')">Go to Sign Up</button>
+        <button type="button" class="btn" onclick="toggleAuth('forgot')">Forgot Password?</button>
+      </form>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupCard" class="auth-card hidden">
+      <h3>Sign Up</h3>
+      <form id="signupForm">
+        <label>Name</label>
+        <input type="text" id="signupName" placeholder="Enter name" required>
+        <label>Age</label>
+        <input type="number" id="signupAge" placeholder="Enter age" required>
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="Enter email" required>
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Enter password" required>
+        <label>Profile Image (Optional)</label>
+        <input type="file" id="signupImage" accept="image/*">
+        <p class="small-text">Password min 6 characters with letters & numbers</p>
+        <button type="submit" class="btn">Sign Up</button>
+        <button type="button" class="btn" onclick="toggleAuth('login')">Go to Login</button>
+      </form>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div id="forgotCard" class="auth-card hidden">
+      <h3>Forgot Password</h3>
+      <form id="forgotForm">
+        <label>Email</label>
+        <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+        <label>New Password</label>
+        <input type="password" id="forgotNewPass" placeholder="Enter new password" required>
+        <button type="submit" class="btn">Reset Password</button>
+        <button type="button" class="btn" onclick="toggleAuth('login')">Back to Login</button>
+      </form>
+    </div>
+
+    <!-- USER PROFILE -->
+    <div id="userProfile" class="auth-card hidden">
+      <h3>👤 Profile</h3>
+      <img id="profilePic" src="" alt="Profile Image" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:10px;display:none;">
+      <p><strong>Name:</strong> <span id="pName"></span></p>
+      <p><strong>Email:</strong> <span id="pEmail"></span></p>
+      <button class="btn" onclick="toggleAuth('editProfile')">Edit Profile</button>
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- EDIT PROFILE -->
+    <div id="editProfileCard" class="auth-card hidden">
+      <h3>Edit Profile</h3>
+      <form id="editProfileForm">
+        <label>Name</label>
+        <input type="text" id="editName" required>
+        <label>Age</label>
+        <input type="number" id="editAge" required>
+        <label>New Password</label>
+        <input type="password" id="editPassword" placeholder="Leave blank to keep old password">
+        <label>Profile Image</label>
+        <input type="file" id="editImage" accept="image/*">
+        <button type="submit" class="btn">Save Changes</button>
+        <button type="button" class="btn" onclick="showProfile()">Cancel</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="center small-text">© 2025 Clipify</div>
+
+<script>
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+let users = JSON.parse(localStorage.getItem('users')) || [];
+let videos = JSON.parse(localStorage.getItem('videos')) || [];
+
+function showTab(tab) {
+  document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).classList.remove('hidden');
+  document.getElementById(tab + 'Tab').classList.add('active');
+}
+
+function displayVideos() {
+  const homeDiv = document.getElementById('home');
+  homeDiv.innerHTML = '';
+  videos.slice().reverse().forEach((v, i) => {
+    const div = document.createElement('div');
+    div.className = 'video-card';
+    div.innerHTML = `
+      ${v.type === 'iframe'
+        ? `<iframe src="${v.url}${v.url.includes('?') ? '&' : '?'}autoplay=1&mute=1"
+          frameborder="0" allow="autoplay; encrypted-media" allowfullscreen
+          style="width:100%;height:300px;border-radius:16px;"></iframe>`
+        : `<video controls autoplay muted playsinline src="${v.url}" style="width:100%;border-radius:16px;"></video>`}
+      <div class="video-meta">
+        <strong>${v.title}</strong><br>
+        <span class="small-text">${v.description}</span><br>
+        <span class="small-text"><em>Uploaded by: ${v.userName}</em></span><br>
+        ${currentUser && v.userName === currentUser.name ? `<button class="btn" onclick="deleteVideo(${videos.length - 1 - i})">Delete</button>` : ''}
+      </div>`;
+    homeDiv.appendChild(div);
+  });
+}
+displayVideos();
+
+function toggleAuth(view) {
+  ['loginCard','signupCard','forgotCard','userProfile','editProfileCard'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  if (view === 'login') document.getElementById('loginCard').classList.remove('hidden');
+  if (view === 'signup') document.getElementById('signupCard').classList.remove('hidden');
+  if (view === 'forgot') document.getElementById('forgotCard').classList.remove('hidden');
+  if (view === 'editProfile') {
+    document.getElementById('editProfileCard').classList.remove('hidden');
+    editName.value = currentUser.name;
+    editAge.value = currentUser.age;
+  }
+}
+
+document.getElementById('signupForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = signupName.value.trim();
+  const age = signupAge.value;
+  const email = signupEmail.value.trim();
+  const password = signupPassword.value;
+  const imageFile = signupImage.files[0];
+
+  if (password.length < 6) return alert('Password too short');
+  if (users.find(u => u.email === email)) return alert('Email already registered');
+
+  let imageURL = '';
+  if (imageFile) imageURL = URL.createObjectURL(imageFile);
+
+  const user = { name, age, email, password, imageURL };
+  users.push(user);
+  localStorage.setItem('users', JSON.stringify(users));
+  alert('Sign Up successful! Please login.');
+  toggleAuth('login');
+  signupForm.reset();
+});
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
+  const user = users.find(u => u.email === email && u.password === password);
+  if (!user) return alert('Invalid email or password');
+  currentUser = user;
+  localStorage.setItem('currentUser', JSON.stringify(user));
+  showProfile();
+});
+
+document.getElementById('forgotForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = forgotEmail.value.trim();
+  const newPass = forgotNewPass.value.trim();
+  const user = users.find(u => u.email === email);
+  if (!user) return alert('Email not found');
+  user.password = newPass;
+  localStorage.setItem('users', JSON.stringify(users));
+  alert('Password reset successful! You can now log in.');
+  toggleAuth('login');
+});
+
+document.getElementById('editProfileForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const newName = editName.value.trim();
+  const newAge = editAge.value;
+  const newPass = editPassword.value.trim();
+  const newImage = editImage.files[0];
+
+  const idx = users.findIndex(u => u.email === currentUser.email);
+  if (idx !== -1) {
+    users[idx].name = newName;
+    users[idx].age = newAge;
+    if (newPass) users[idx].password = newPass;
+    if (newImage) users[idx].imageURL = URL.createObjectURL(newImage);
+    localStorage.setItem('users', JSON.stringify(users));
+    currentUser = users[idx];
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    alert('Profile updated successfully!');
+    showProfile();
+  }
+});
+
+function showProfile() {
+  if (currentUser) {
+    ['loginCard','signupCard','forgotCard','editProfileCard'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById('userProfile').classList.remove('hidden');
+    pName.textContent = currentUser.name;
+    pEmail.textContent = currentUser.email;
+    if (currentUser.imageURL) {
+      profilePic.src = currentUser.imageURL;
+      profilePic.style.display = 'block';
+    } else profilePic.style.display = 'none';
+  } else {
+    toggleAuth('login');
+  }
+}
+
+function logout() {
+  localStorage.removeItem('currentUser');
+  currentUser = null;
+  toggleAuth('login');
+  alert('Logged out!');
+}
+
+function deleteVideo(i) {
+  if (confirm('Delete this video?')) {
+    videos.splice(i, 1);
+    localStorage.setItem('videos', JSON.stringify(videos));
+    displayVideos();
+  }
+}
+
+showProfile();
+</script>
+</body>
+</html>
